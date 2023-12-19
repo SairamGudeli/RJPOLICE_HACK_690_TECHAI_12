@@ -1,0 +1,52 @@
+import requests
+import time
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+# List of cryptocurrencies to track
+crypto_list = ['bitcoin', 'ethereum', 'litecoin', 'ripple', 'bitcoin-cash']
+
+def get_crypto_data(crypto):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}"
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def get_crypto_price(crypto_data):
+    price = crypto_data['market_data']['current_price']['usd']
+    return price
+
+def display_price_history(crypto, days=30, interval="daily"):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}/market_chart?vs_currency=usd&days={days}&interval={interval}"
+    response = requests.get(url)
+    data = response.json()
+    prices = data['prices']
+
+    dates = [item[0] for item in prices]
+    dates = [datetime.fromtimestamp(date/1000.0).strftime('%Y-%m-%d') for date in dates]
+
+    prices = [item[1] for item in prices]
+
+    plt.plot(dates, prices)
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.title(f'Price History of {crypto}')
+    plt.show()
+
+def live_track_and_show_history(crypto, show_history=True):
+    crypto_data = get_crypto_data(crypto)
+    print(f"The current price of {crypto} is ${get_crypto_price(crypto_data)}")
+
+    if show_history:
+        display_price_history(crypto)
+
+while True:
+    user_choice = input("Enter a cryptocurrency to track (q to quit): ").lower()
+
+    if user_choice == "q":
+        break
+
+    live_track_and_show_history(user_choice)
+    time.sleep(60)
+
+print("Bye!")
