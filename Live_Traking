@@ -52,3 +52,90 @@ while True:
     time.sleep(60)
 
 print("Bye!")
+
+
+#GUI
+import tkinter
+from tkinter import PhotoImage
+import requests
+import time
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+root = tkinter.Tk()
+root.title("My app")
+root.geometry("900x500")
+
+text_label = tkinter.Label(root, text="cryptocurrency flow investigation")
+text_label.pack()
+
+image_path = PhotoImage(file="C:/Users/admin/Downloads/WhatsApp Image 2023-12-19 at 18.37.43_e85cbd8b.png")
+bg_image = tkinter.Label(root, image=image_path)
+bg_image.place(relheight=1, relwidth=1)
+
+text_label = tkinter.Label(root, text="cryptocurrency flow investigation", font=('Georgia', 24))
+text_label.pack()
+
+def button1_click():
+    crypto_to_track = "bitcoin"
+    live_track_and_show_history(crypto_to_track)
+
+def button2_click():
+    # Your code for button 2 here
+    print("Button 2 clicked")
+
+def button3_click():
+    # Your code for button 3 here
+    print("Button 3 clicked")
+
+def button4_click():
+    # Your code for button 4 here
+    print("Button 4 clicked")
+
+def get_crypto_data(crypto):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}"
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def get_crypto_price(crypto_data):
+    price = crypto_data['market_data']['current_price']['usd']
+    return price
+
+def display_price_history(crypto, days=30, interval="daily"):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}/market_chart?vs_currency=usd&days={days}&interval={interval}"
+    response = requests.get(url)
+    data = response.json()
+    prices = data['prices']
+
+    dates = [item[0] for item in prices]
+    dates = [datetime.fromtimestamp(date/1000.0).strftime('%Y-%m-%d') for date in dates]
+
+    prices = [item[1] for item in prices]
+
+    plt.plot(dates, prices)
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.title(f'Price History of {crypto}')
+    plt.show()
+
+def live_track_and_show_history(crypto, show_history=True):
+    crypto_data = get_crypto_data(crypto)
+    print(f"The current price of {crypto} is ${get_crypto_price(crypto_data)}")
+
+    if show_history:
+        display_price_history(crypto)
+
+button1 = tkinter.Button(root, text="Track Bitcoin", command=button1_click, bg="black", fg="white")
+button1.pack(pady=10)
+
+button2 = tkinter.Button(root, text="Law and rules", command=button2_click, bg="green", fg="white")
+button2.pack(pady=10)
+
+button3 = tkinter.Button(root, text="Fraud Detection", command=button3_click, bg="red", fg="white")
+button3.pack(pady=10)
+
+button4 = tkinter.Button(root, text="Education", command=button4_click, bg="purple", fg="white")
+button4.pack(pady=10)
+
+root.mainloop()
