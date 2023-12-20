@@ -54,6 +54,10 @@ while True:
 print("Bye!")
 
 
+
+
+
+
 #GUI
 import tkinter
 from tkinter import PhotoImage
@@ -137,5 +141,158 @@ button3.pack(pady=10)
 
 button4 = tkinter.Button(root, text="Education", command=button4_click, bg="purple", fg="white")
 button4.pack(pady=10)
+
+root.mainloop()
+
+#GUI
+import tkinter
+from tkinter import ttk
+from tkinter import PhotoImage
+import requests
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+root = tkinter.Tk()
+root.title("Cryptocurrency Flow Investigation")
+root.geometry("900x500")
+
+text_label = tkinter.Label(root, text="Cryptocurrency Flow Investigation", font=("Time Of Roman", 18))
+text_label.pack()
+
+# Create PhotoImage instance
+image_path = PhotoImage(file=r"C:\Users\admin\Downloads\1424856.png")
+bg_image = tkinter.Label(root, image=image_path)
+bg_image.place(relheight=1, relwidth=1)
+
+text_label = tkinter.Label(root, text="Cryptocurrency Flow Investigation", font=("Time Of Roman", 40))
+text_label.pack()
+
+# Combobox options
+crypto_options = ["Bitcoin", "Ethereum", "Litecoin", "USD", "Binancecoin", "Ripple", "Solana", "Cardano",
+                  "Polkadot", "Dogecoin",  "Tron", "Chainlink",  "Polygon", "Shiba", "Dai",
+                  "BitcoinCash", "Cosmos", "Computer Internet"]  # Add more options as needed
+
+# Variable to store selected cryptocurrency
+selected_crypto = tkinter.StringVar()
+
+# Function to handle Combobox selection
+def on_crypto_select(event):
+    selected_crypto.set(crypto_combobox.get())
+
+# Create Combobox
+crypto_combobox = ttk.Combobox(root, values=crypto_options, textvariable=selected_crypto, font=("Time Of Roman", 19))
+crypto_combobox.set("Select Cryptocurrency")  # Set default text
+crypto_combobox.pack(pady=20, padx=29, side=tkinter.TOP)
+crypto_combobox.bind("<<ComboboxSelected>>", on_crypto_select)
+
+def button1_click():
+    crypto_to_track = selected_crypto.get().lower()  # Use the selected cryptocurrency
+    live_track_and_show_history(crypto_to_track)
+
+def button2_click():
+    # Your code for button 2 here
+    new_window = tkinter.Toplevel(root)
+    new_window.title("Law and Rules")
+    new_window.geometry("800x600")
+
+    # Create and set background image for the new window
+    new_image_path = PhotoImage(file="C:/Users/admin/Downloads/WhatsApp Image 2023-12-19 at 18.37.43_e85cbd8b.png")  # Replace with your image path
+    new_bg_image = tkinter.Label(new_window, image=new_image_path)
+    new_bg_image.place(relheight=1, relwidth=1)
+
+
+    # Create and display content in the new window
+    label = tkinter.Label(new_window, text="Summary of Cryptocurrency Regulation in India (2024):\n\n"
+                                           "1. VDAs as Legal Tender:\n"
+                                           "   • VDAs are not expressly regulated or prohibited.\n"
+                                           "   • Individuals and entities allowed to hold, invest, and transact VDAs under existing laws.\n"
+                                           "   • Government does not recognize cryptocurrencies as legal tender but acknowledges their dual nature.\n"
+                                           "   • 2020 Supreme Court judgment highlights the evolving global understanding of VDAs.\n\n"
+                                           "2. Sales Regulation:\n"
+                                           "   • Legacy legislation triggers in certain circumstances.\n"
+                                           "   • Regulatory mechanism based on VDA use case, treated as commodities/assets in some scenarios.\n"
+                                           "   • Advertising guidelines set by the Advertising Standards Council of India in 2022.\n\n"
+                                           "3. Taxation:\n"
+                                           "   • Income from VDA trade subject to both direct (income tax) and indirect (GST) taxation.\n"
+                                           "   • Finance Act 2022 introduces a 30% tax on income from VDA transfers.\n"
+                                           "   • Guidelines for Exchanges and P2P transactions regarding withholding tax and GST.\n\n"
+                                           "4. Money Transmission Laws and AML Requirements:\n"
+                                           "   • RBI circulars regulate entities handling VDAs, following KYC, AML, and CFT requirements.\n"
+                                           "   • Supreme Court overturns the ban on regulated entities dealing with VDAs.\n"
+                                           "   • PMLA scope expanded to cover various VDA-related aspects, emphasizing regulatory oversight.\n"
+                                           "   • CERT-In issues directions for virtual asset service providers, exchange providers, and custodian wallet providers to maintain KYC and transaction records for five years.\n\n"
+                                           "5. Central Bank Digital Currency (CBDC):\n"
+                                           "   • RBI initiates the e-Rupee CBDC pilot, broadening the definition of 'bank note' to include digital forms.\n\n"
+                                           "6. RBI on Macro-Financial Risks:\n"
+                                           "   • RBI addresses risks associated with VDAs, proposing three policy approaches: prohibition, containment, and regulation.\n"
+                                           "   • Global coordination needed for evaluating risks, especially in Emerging Markets and Developing Economies.",
+                            font=("Time Of Roman", 12), justify=tkinter.LEFT)
+    label.pack(pady=20)
+
+    # Add more widgets or content as needed
+
+# ... (rest of your code remains unchanged)
+
+def button3_click():
+    # Your code for button 3 here
+    print("Button 3 clicked")
+
+def button4_click():
+    # Your code for button 4 here
+    print("Button 4 clicked")
+
+def get_crypto_data(crypto):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}"
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def get_crypto_price(crypto_data):
+        price = crypto_data['market_data']['current_price']['usd']
+        return price
+    
+def display_price_history(crypto, days=30, interval="daily"):
+    url = f"https://api.coingecko.com/api/v3/coins/{crypto}/market_chart?vs_currency=usd&days={days}&interval={interval}"
+    response = requests.get(url)
+    data = response.json()
+    prices= data['prices']
+
+    dates = [item[0] for item in prices]
+    dates = [datetime.fromtimestamp(date / 1000.0).strftime('%Y-%m-%d') for date in dates]
+
+    prices = [item[1] for item in prices]
+
+    plt.plot(dates, prices)
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.title(f'Price History of {crypto}')
+    plt.show()
+
+def live_track_and_show_history(crypto, show_history=True):
+    crypto_data = get_crypto_data(crypto)
+
+    if crypto_data is not None:
+        current_price = get_crypto_price(crypto_data)
+        if current_price is not None:
+            print(f"The current price of {crypto} is ${current_price}")
+
+            if show_history:
+                display_price_history(crypto)
+
+button1 = tkinter.Button(root, text="Track Crypto", command=button1_click, bg="black", fg="white", width=20, height=2,
+                         font=("Time Of Roman", 19))
+button1.pack(pady=10, padx=10, side=tkinter.TOP)
+
+button2 = tkinter.Button(root, text="Law and Rules", command=button2_click, bg="green", fg="white", width=20, height=2,
+                         font=("Time Of Roman", 19))
+button2.pack(pady=10, padx=10, side=tkinter.TOP)
+
+button3 = tkinter.Button(root, text="Fraud Detection", command=button3_click, bg="red", fg="white", width=20, height=2,
+                         font=("Time Of Roman", 19))
+button3.pack(pady=10, padx=10, side=tkinter.TOP)
+
+button4 = tkinter.Button(root, text="Education", command=button4_click, bg="purple", fg="white", width=20, height=2,
+                         font=("Time Of Roman", 19))
+button4.pack(pady=10, padx=10, side=tkinter.TOP)
 
 root.mainloop()
