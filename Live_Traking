@@ -59,42 +59,15 @@ print("Bye!")
 
 
 #GUI
-import tkinter
-from tkinter import PhotoImage
+#### This is small Part of Our code we are working on code ####
+
 import requests
 import time
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-root = tkinter.Tk()
-root.title("My app")
-root.geometry("900x500")
-
-text_label = tkinter.Label(root, text="cryptocurrency flow investigation")
-text_label.pack()
-
-image_path = PhotoImage(file="C:/Users/admin/Downloads/WhatsApp Image 2023-12-19 at 18.37.43_e85cbd8b.png")
-bg_image = tkinter.Label(root, image=image_path)
-bg_image.place(relheight=1, relwidth=1)
-
-text_label = tkinter.Label(root, text="cryptocurrency flow investigation", font=('Georgia', 24))
-text_label.pack()
-
-def button1_click():
-    crypto_to_track = "bitcoin"
-    live_track_and_show_history(crypto_to_track)
-
-def button2_click():
-    # Your code for button 2 here
-    print("Button 2 clicked")
-
-def button3_click():
-    # Your code for button 3 here
-    print("Button 3 clicked")
-
-def button4_click():
-    # Your code for button 4 here
-    print("Button 4 clicked")
+# List of cryptocurrencies to track
+crypto_list = ['bitcoin', 'ethereum', 'litecoin', 'ripple', 'bitcoin-cash']
 
 def get_crypto_data(crypto):
     url = f"https://api.coingecko.com/api/v3/coins/{crypto}"
@@ -130,19 +103,21 @@ def live_track_and_show_history(crypto, show_history=True):
     if show_history:
         display_price_history(crypto)
 
-button1 = tkinter.Button(root, text="Track Bitcoin", command=button1_click, bg="black", fg="white")
-button1.pack(pady=10)
+while True:
+    user_choice = input("Enter a cryptocurrency to track (q to quit): ").lower()
 
-button2 = tkinter.Button(root, text="Law and rules", command=button2_click, bg="green", fg="white")
-button2.pack(pady=10)
+    if user_choice == "q":
+        break
 
-button3 = tkinter.Button(root, text="Fraud Detection", command=button3_click, bg="red", fg="white")
-button3.pack(pady=10)
+    live_track_and_show_history(user_choice)
+    time.sleep(60)
 
-button4 = tkinter.Button(root, text="Education", command=button4_click, bg="purple", fg="white")
-button4.pack(pady=10)
+print("Bye!")
 
-root.mainloop()
+
+
+
+
 
 #GUI
 import tkinter
@@ -151,6 +126,7 @@ from tkinter import PhotoImage
 import requests
 from datetime import datetime
 import matplotlib.pyplot as plt
+import pandas as pd
 
 root = tkinter.Tk()
 root.title("Cryptocurrency Flow Investigation")
@@ -160,7 +136,7 @@ text_label = tkinter.Label(root, text="Cryptocurrency Flow Investigation", font=
 text_label.pack()
 
 # Create PhotoImage instance
-image_path = PhotoImage(file=r"C:\Users\admin\Downloads\1424856.png")
+image_path = PhotoImage(file=r"C:\Users\admin\Downloads\1424856.png")  # Replace with your image path
 bg_image = tkinter.Label(root, image=image_path)
 bg_image.place(relheight=1, relwidth=1)
 
@@ -169,8 +145,8 @@ text_label.pack()
 
 # Combobox options
 crypto_options = ["Bitcoin", "Ethereum", "Litecoin", "USD", "Binancecoin", "Ripple", "Solana", "Cardano",
-                  "Polkadot", "Dogecoin",  "Tron", "Chainlink",  "Polygon", "Shiba", "Dai",
-                  "BitcoinCash", "Cosmos", "Computer Internet"]  # Add more options as needed
+                  "Polkadot", "Dogecoin", "Tron", "Chainlink", "Polygon", "Shiba", "Dai",
+                  "bitcoincash", "Cosmos", ]  # Add more options as needed
 
 # Variable to store selected cryptocurrency
 selected_crypto = tkinter.StringVar()
@@ -182,7 +158,7 @@ def on_crypto_select(event):
 # Create Combobox
 crypto_combobox = ttk.Combobox(root, values=crypto_options, textvariable=selected_crypto, font=("Time Of Roman", 19))
 crypto_combobox.set("Select Cryptocurrency")  # Set default text
-crypto_combobox.pack(pady=20, padx=29, side=tkinter.TOP)
+crypto_combobox.pack(pady=20, padx=20, side=tkinter.TOP)
 crypto_combobox.bind("<<ComboboxSelected>>", on_crypto_select)
 
 def button1_click():
@@ -199,7 +175,6 @@ def button2_click():
     new_image_path = PhotoImage(file="C:/Users/admin/Downloads/WhatsApp Image 2023-12-19 at 18.37.43_e85cbd8b.png")  # Replace with your image path
     new_bg_image = tkinter.Label(new_window, image=new_image_path)
     new_bg_image.place(relheight=1, relwidth=1)
-
 
     # Create and display content in the new window
     label = tkinter.Label(new_window, text="Summary of Cryptocurrency Regulation in India (2024):\n\n"
@@ -229,18 +204,19 @@ def button2_click():
                             font=("Time Of Roman", 12), justify=tkinter.LEFT)
     label.pack(pady=20)
 
-    # Add more widgets or content as needed
-
-# ... (rest of your code remains unchanged)
-
 def button3_click():
     # Your code for button 3 here
     print("Button 3 clicked")
+
 
 def button4_click():
     # Your code for button 4 here
     print("Button 4 clicked")
 
+def button5_click():
+    crypto_to_track = selected_crypto.get().lower()  # Use the selected cryptocurrency
+    watch_trading_window(crypto_to_track)
+    
 def get_crypto_data(crypto):
     url = f"https://api.coingecko.com/api/v3/coins/{crypto}"
     response = requests.get(url)
@@ -255,7 +231,7 @@ def display_price_history(crypto, days=30, interval="daily"):
     url = f"https://api.coingecko.com/api/v3/coins/{crypto}/market_chart?vs_currency=usd&days={days}&interval={interval}"
     response = requests.get(url)
     data = response.json()
-    prices= data['prices']
+    prices = data['prices']
 
     dates = [item[0] for item in prices]
     dates = [datetime.fromtimestamp(date / 1000.0).strftime('%Y-%m-%d') for date in dates]
@@ -279,20 +255,104 @@ def live_track_and_show_history(crypto, show_history=True):
             if show_history:
                 display_price_history(crypto)
 
+def get_transaction_details(api_key, transaction_id):
+    base_url = f'https://api.blockchair.com/bitcoin/dashboards/transaction/{transaction_id}'
+
+    try:
+        response = requests.get(base_url, params={'key': api_key})
+        response.raise_for_status()  # Raise HTTPError for bad responses
+    except requests.exceptions.RequestException as err:
+        print(f"Error: {err}")
+        return None
+
+    transaction_data = response.json()
+    return transaction_data
+
+def is_fraudulent(transaction_details):
+    # Placeholder for basic fraud detection rules
+    # Add your custom rules based on transaction features
+    if 'inputs' in transaction_details and 'outputs' in transaction_details:
+        if len(transaction_details['inputs']) > 10 or len(transaction_details['outputs']) > 10:
+            return True
+
+    return False
+
+def detect_and_report_fraud(api_key, transaction_id):
+    transaction_details = get_transaction_details(api_key, transaction_id)
+
+    if transaction_details:
+        if is_fraudulent(transaction_details):
+            return f"Warning: Transaction {transaction_id} may be fraudulent."
+        else:
+            return f"Transaction {transaction_id} appears to be normal."
+    else:
+        return "Error: Unable to fetch transaction details."
+def watch_trading_window(crypto):
+    watch_window = tkinter.Toplevel(root)
+    watch_window.title(f"Watch Trading - {crypto.capitalize()}")
+    watch_window.geometry("800x600")
+
+    # Your code for watching trading goes here
+    # You can display real-time data, charts, or any other relevant information
+    import pandas as pd
+
+    # Load the dataset into a dataframe
+    df = pd.read_csv("C:/Users/admin/Downloads/transaction_dataset 1.csv")
+
+    # Perform data preprocessing if needed
+
+    # Analyze trading patterns
+    df['Avg_min_between_sent_tnx'] = df['Avg min between sent tnx']
+    df['Avg_min_between_received_tnx'] = df['Avg min between received tnx']
+    df['Time_diff_between_first_last'] = df['Time Diff between first and last (Mins)']
+
+    # Identify suspicious transactions
+    df['Sent_tnx_count'] = df['Sent tnx']
+    df['Received_tnx_count'] = df['Received Tnx']
+    df['Created_contracts_count'] = df['Number of Created Contracts']
+
+    # Look for abnormal behavior
+    df['Min_val_received'] = df['min value received']
+    df['Max_val_received'] = df['max value received']
+    df['Avg_val_received'] = df['avg val received']
+    df['Min_val_sent'] = df['min val sent']
+    df['Max_val_sent'] = df['max val sent']
+    df['Avg_val_sent'] = df['avg val sent']
+    df['Min_val_sent_to_contract'] = df['min value sent to contract']
+    df['Max_val_sent_to_contract'] = df['max val sent to contract']
+    df['Avg_val_sent_to_contract'] = df['avg value sent to contract']
+    df['Total_transactions'] = df['total transactions (including tnx to create contract)']
+    df['Total_ether_sent'] = df['total Ether sent']
+    df['Total_ether_received'] = df['total ether received']
+    df['Total_ether_sent_contracts'] = df['total ether sent contracts']
+    df['Total_ether_balance'] = df['total ether balance']
+
+    # Look for wash trading indicators
+
+    # Example: addresses with a high number of transactions but a low total ether balance
+    potential_wash_traders = df[(df['Total_transactions'] > 100) & (df['Total_ether_balance'] < 10)]
+
+    # Print potential wash traders
+    print(potential_wash_traders[['Address', 'Total_transactions', 'Total_ether_balance']])
+
 button1 = tkinter.Button(root, text="Track Crypto", command=button1_click, bg="black", fg="white", width=20, height=2,
                          font=("Time Of Roman", 19))
 button1.pack(pady=10, padx=10, side=tkinter.TOP)
 
-button2 = tkinter.Button(root, text="Law and Rules", command=button2_click, bg="green", fg="white", width=20, height=2,
+button2 = tkinter.Button(root, text="Law and Rules", command=button2_click, bg="red", fg="white", width=20, height=2,
                          font=("Time Of Roman", 19))
 button2.pack(pady=10, padx=10, side=tkinter.TOP)
 
-button3 = tkinter.Button(root, text="Fraud Detection", command=button3_click, bg="red", fg="white", width=20, height=2,
+button3 = tkinter.Button(root, text="Fraud Detection", command=button3_click, bg="yellow", fg="white", width=20, height=2,
                          font=("Time Of Roman", 19))
 button3.pack(pady=10, padx=10, side=tkinter.TOP)
 
-button4 = tkinter.Button(root, text="Education", command=button4_click, bg="purple", fg="white", width=20, height=2,
+button4 = tkinter.Button(root, text="Education", command=button4_click, bg="orange", fg="white", width=20, height=2,
                          font=("Time Of Roman", 19))
 button4.pack(pady=10, padx=10, side=tkinter.TOP)
+
+button5 = tkinter.Button(root, text="Watch Trading", command=button5_click, bg="green", fg="white", width=20, height=2,
+                         font=("Time Of Roman", 19))
+button5.pack(pady=10, padx=10, side=tkinter.TOP)
 
 root.mainloop()
