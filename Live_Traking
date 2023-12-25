@@ -356,3 +356,319 @@ button5 = tkinter.Button(root, text="Watch Trading", command=button5_click, bg="
 button5.pack(pady=10, padx=10, side=tkinter.TOP)
 
 root.mainloop()
+
+
+
+#Fraud Dection
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PowerTransformer
+from imblearn.over_sampling import SMOTE
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import pickle
+
+#Data Reading
+df = pd.read_csv("C:/Users/admin/Downloads/transaction_dataset 1.csv" , index_col=0)
+print(df.shape)
+df.head()
+
+# Ommit first two columns (Index, Adress)
+df = df.iloc[:,2:]
+df.info()
+
+# Turn object variables into 'category' dtype for more computation efficiency
+categories = df.select_dtypes('O').columns.astype('category')
+df[categories]
+for i in df[categories].columns:
+  print(f'The categorical column --{i}-- has --{len(df[i].value_counts())}-- unique values')
+numericals = df.select_dtypes(include=['float','int']).columns
+df[numericals].describe()
+df[numericals].var()
+print(df['FLAG'].value_counts())
+
+pie, ax = plt.subplots(figsize=[15,10])
+labels = ['Non-fraud', 'Fraud']
+colors = ['#f9ae35', '#f64e38']
+plt.pie(x = df['FLAG'].value_counts(), autopct='%.2f%%', explode=[0.02]*2, labels=labels, pctdistance=0.5, textprops={'fontsize': 14}, colors = colors)
+plt.title('Target distribution')
+plt.show()
+# Correlation matrix
+corr = df.corr()
+
+mask = np.zeros_like(corr)
+mask[np.triu_indices_from(mask)]=True
+with sns.axes_style('white'):
+  fig, ax = plt.subplots(figsize=(18,10))
+  sns.heatmap(corr,  mask=mask, annot=False, cmap='CMRmap', center=0, square=True)
+
+
+
+###Data cleaning
+# Visualize missings pattern of the dataframe
+plt.figure(figsize=(12,6))
+sns.heatmap(df.isnull(), cbar=False)
+plt.show()
+# Drop the two categorical features
+df.drop(df[categories], axis=1, inplace=True)
+# Replace missings of numerical variables with median
+df.fillna(df.median(), inplace=True)
+# Visualize missings pattern of the dataframe
+print(df.shape)
+plt.figure(figsize=(12,6))
+sns.heatmap(df.isnull(), cbar=False)
+plt.show()
+# Filtering the features with 0 variance
+no_var = df.var() == 0
+print(df.var()[no_var])
+print('\n')
+
+# Drop features with 0 variance --- these features will not help in the performance of the model
+df.drop(df.var()[no_var].index, axis = 1, inplace = True)
+print(df.var())
+print(df.shape)
+df.info()
+# Recheck the Correlation matrix
+corr = df.corr()
+
+mask = np.zeros_like(corr)
+mask[np.triu_indices_from(mask)]=True
+with sns.axes_style('white'):
+  fig, ax = plt.subplots(figsize=(18,10))
+  sns.heatmap(corr,  mask=mask, annot=False, cmap='CMRmap', center=0, linewidths=0.1, square=True)
+  drop = ['total transactions (including tnx to create contract', 'total ether sent contracts', 'max val sent to contract', ' ERC20 avg val rec',
+        ' ERC20 avg val rec',' ERC20 max val rec', ' ERC20 min val rec', ' ERC20 uniq rec contract addr', 'max val sent', ' ERC20 avg val sent',
+        ' ERC20 min val sent', ' ERC20 max val sent', ' Total ERC20 tnxs', 'avg value sent to contract', 'Unique Sent To Addresses',
+        'Unique Received From Addresses', 'total ether received', ' ERC20 uniq sent token name', 'min value received', 'min val sent', ' ERC20 uniq rec addr' ]
+df.drop(drop, axis=1, inplace=True)
+# Recheck the Correlation matrix
+corr = df.corr()
+
+mask = np.zeros_like(corr)
+mask[np.triu_indices_from(mask)]=True
+with sns.axes_style('white'):
+  fig, ax = plt.subplots(figsize=(18,10))
+  sns.heatmap(corr,  mask=mask, annot=False, cmap='CMRmap', center=0, linewidths=0.1, square=True)
+
+
+columns = df.columns
+columns
+
+
+# Investigate the distribution of our features using boxplots
+b=20
+
+fig, axes = plt.subplots(6, 3, figsize=(14, 14), constrained_layout =True)
+plt.subplots_adjust(wspace = 0.5, hspace=0.8)
+plt.suptitle("Distribution of features",y=0.95, size=18, weight='bold')
+
+ax = sns.boxplot(ax = axes[0,0], data=df, x=columns[1])
+ax.set_title(f'Distribution of {columns[1]}')
+
+ax1 = sns.boxplot(ax = axes[0,1], data=df, x=columns[2])
+ax1.set_title(f'Distribution of {columns[2]}')
+
+ax2 = sns.boxplot(ax = axes[0,2], data=df, x=columns[3])
+ax2.set_title(f'Distribution of {columns[3]}')
+
+ax3 = sns.boxplot(ax = axes[1,0], data=df, x=columns[4])
+ax3.set_title(f'Distribution of {columns[4]}')
+
+ax4 = sns.boxplot(ax = axes[1,1], data=df, x=columns[5])
+ax4.set_title(f'Distribution of {columns[5]}')
+
+ax5 = sns.boxplot(ax = axes[1,2], data=df, x=columns[6])
+ax5.set_title(f'Distribution of {columns[6]}')
+
+ax6 = sns.boxplot(ax = axes[2,0], data=df, x=columns[7])
+ax6.set_title(f'Distribution of {columns[7]}')
+
+ax7 = sns.boxplot(ax = axes[2,1], data=df, x=columns[8])
+ax7.set_title(f'Distribution of {columns[8]}')
+
+ax8 = sns.boxplot(ax = axes[2,2], data=df, x=columns[9])
+ax8.set_title(f'Distribution of {columns[9]}')
+
+ax9 = sns.boxplot(ax = axes[3,0], data=df, x=columns[10])
+ax9.set_title(f'Distribution of {columns[10]}')
+
+ax10 = sns.boxplot(ax = axes[3,1], data=df, x=columns[11])
+ax10.set_title(f'Distribution of {columns[11]}')
+
+ax11 = sns.boxplot(ax = axes[3,2], data=df, x=columns[12])
+ax11.set_title(f'Distribution of {columns[12]}')
+
+ax12 = sns.boxplot(ax = axes[4,0], data=df, x=columns[13])
+ax12.set_title(f'Distribution of {columns[13]}')
+
+ax13 = sns.boxplot(ax = axes[4,1], data=df, x=columns[14])
+ax13.set_title(f'Distribution of {columns[14]}')
+
+ax14 = sns.boxplot(ax = axes[4,2], data=df, x=columns[15])
+ax14.set_title(f'Distribution of {columns[15]}')
+
+ax15 = sns.boxplot(ax = axes[5,0], data=df, x=columns[16])
+ax15.set_title(f'Distribution of {columns[16]}')
+
+ax16 = sns.boxplot(ax = axes[5,1], data=df, x=columns[17])
+ax16.set_title(f'Distribution of {columns[17]}')
+
+ax17 = sns.boxplot(ax = axes[5,2], data=df, x=columns[18])
+ax17.set_title(f'Distribution of {columns[18]}')
+
+plt.show()
+
+
+# Some features present a small distribution
+for i in df.columns[1:]:
+  if len(df[i].value_counts()) < 10:
+    print(f'The column {i} has the following distribution: \n{df[i].value_counts()}')
+    print('======================================')
+
+
+drops = ['min value sent to contract', ' ERC20 uniq sent addr.1']
+df.drop(drops, axis=1, inplace=True)
+print(df.shape)
+df.head()
+
+
+##Data preparation
+y = df.iloc[:, 0]
+X = df.iloc[:, 1:]
+print(X.shape, y.shape)
+# Split into training (80%) and testing set (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 123)
+print(X_train.shape, y_train.shape)
+print(X_test.shape, y_test.shape)
+
+# Normalize the training features
+norm = PowerTransformer()
+norm_train_f = norm.fit_transform(X_train)
+norm_df = pd.DataFrame(norm_train_f, columns=X_train.columns)
+norm_df
+
+# Distribution of features after log transformation
+
+b=20
+
+fig, axes = plt.subplots(6, 3, figsize=(14, 14), constrained_layout =True)
+plt.subplots_adjust(wspace = 0.5, hspace=0.8)
+axes[-1, -1].axis('off') # hide axes
+axes[-1, -2].axis('off') # hide axes
+plt.suptitle("Distribution of features after log",y=0.95, family='Sherif', size=18, weight='bold')
+
+ax = sns.boxplot(ax = axes[0,0], data=norm_df, x=norm_df.columns[0])
+ax.set_title(f'Distribution of {norm_df.columns[0]}')
+
+ax1 = sns.boxplot(ax = axes[0,1], data=norm_df, x=norm_df.columns[1])
+ax1.set_title(f'Distribution of {norm_df.columns[1]}')
+
+ax2 = sns.boxplot(ax = axes[0,2], data=norm_df, x=norm_df.columns[2])
+ax2.set_title(f'Distribution of {norm_df.columns[2]}')
+
+ax3 = sns.boxplot(ax = axes[1,0], data=norm_df, x=norm_df.columns[3])
+ax3.set_title(f'Distribution of {norm_df.columns[3]}')
+
+ax4 = sns.boxplot(ax = axes[1,1], data=norm_df, x=norm_df.columns[4])
+ax4.set_title(f'Distribution of {norm_df.columns[4]}')
+
+ax5 = sns.boxplot(ax = axes[1,2], data=norm_df, x=norm_df.columns[5])
+ax5.set_title(f'Distribution of {norm_df.columns[5]}')
+
+ax6 = sns.boxplot(ax = axes[2,0], data=norm_df, x=norm_df.columns[6])
+ax6.set_title(f'Distribution of {norm_df.columns[6]}')
+
+ax7 = sns.boxplot(ax = axes[2,1], data=norm_df, x=norm_df.columns[7])
+ax7.set_title(f'Distribution of {norm_df.columns[7]}')
+
+ax8 = sns.boxplot(ax = axes[2,2], data=norm_df, x=norm_df.columns[8])
+ax8.set_title(f'Distribution of {norm_df.columns[8]}')
+
+ax9 = sns.boxplot(ax = axes[3,0], data=norm_df, x=norm_df.columns[9])
+ax9.set_title(f'Distribution of {norm_df.columns[9]}')
+
+ax10 = sns.boxplot(ax = axes[3,1], data=norm_df, x=norm_df.columns[10])
+ax10.set_title(f'Distribution of {norm_df.columns[10]}')
+
+ax11 = sns.boxplot(ax = axes[3,2], data=norm_df, x=norm_df.columns[11])
+ax11.set_title(f'Distribution of {norm_df.columns[11]}')
+
+ax12 = sns.boxplot(ax = axes[4,0], data=norm_df, x=norm_df.columns[12])
+ax12.set_title(f'Distribution of {norm_df.columns[12]}')
+
+ax13 = sns.boxplot(ax = axes[4,1], data=norm_df, x=norm_df.columns[13])
+ax13.set_title(f'Distribution of {norm_df.columns[13]}')
+
+ax14 = sns.boxplot(ax = axes[4,2], data=norm_df, x=norm_df.columns[14])
+ax14.set_title(f'Distribution of {norm_df.columns[14]}')
+
+ax15 = sns.boxplot(ax = axes[5,0], data=norm_df, x=norm_df.columns[15])
+ax15.set_title(f'Distribution of {norm_df.columns[15]}')
+
+plt.show()
+
+####   Handling the imbalance
+###   Oversampling using SMOTE
+
+
+oversample = SMOTE()
+print(f'Shape of the training before SMOTE: {norm_train_f.shape, y_train.shape}')
+
+x_tr_resample, y_tr_resample = oversample.fit_resample(norm_train_f, y_train)
+print(f'Shape of the training after SMOTE: {x_tr_resample.shape, y_tr_resample.shape}')
+
+# Target distribution before SMOTE
+non_fraud = 0
+fraud = 0
+
+for i in y_train:
+  if i == 0:
+    non_fraud +=1
+  else:
+    fraud +=1
+
+# Target distribution after SMOTE
+no = 0
+yes = 1
+
+for j in y_tr_resample:
+  if j == 0:
+    no +=1
+  else:
+    yes +=1
+
+
+print(f'BEFORE OVERSAMPLING \n \tNon-frauds: {non_fraud} \n \tFauds: {fraud}')
+print(f'AFTER OVERSAMPLING \n \tNon-frauds: {no} \n \tFauds: {yes}')
+
+#### Modeling
+#### Random Forest Classifier
+
+RF = RandomForestClassifier(random_state=42)
+RF.fit(x_tr_resample, y_tr_resample)
+preds_RF = RF.predict(norm_test_f)
+
+print(classification_report(y_test, preds_RF))
+print(confusion_matrix(y_test, preds_RF))
+plot_confusion_matrix(RF, norm_test_f, y_test)
+
+# Plot confusion matrix
+cm = confusion_matrix(y_true, y_pred)
+plt.matshow(cm, cmap='Blues')
+plt.colorbar()
+plt.show()
+
