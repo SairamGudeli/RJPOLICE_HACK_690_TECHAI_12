@@ -671,4 +671,3 @@ cm = confusion_matrix(y_true, y_pred)
 plt.matshow(cm, cmap='Blues')
 plt.colorbar()
 plt.show()
-
