@@ -128,9 +128,34 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 
-root = tkinter.Tk()
-root.title("Cryptocurrency Flow Investigation")
-root.geometry("900x500")
+
+# Variable to store selected cryptocurrency
+selected_crypto = tkinter.StringVar()
+
+# Function to handle Combobox selection
+def on_crypto_select(event):
+    selected_crypto.set(crypto_combobox.get())
+
+# Create Combobox
+crypto_combobox = ttk.Combobox(root, values=crypto_options, textvariable=selected_crypto, font=("Time Of Roman", 19))
+crypto_combobox.set("Select Cryptocurrency")  # Set default text
+crypto_combobox.pack(pady=20, padx=20, side=tkinter.TOP)
+cry
+# Variable to store selected cryptocurrency
+selected_crypto = tkinter.StringVar()
+
+# Function to handle Combobox selection
+def on_crypto_select(event):
+    selected_crypto.set(crypto_combobox.get())
+
+# Create Combobox
+crypto_combobox = ttk.Combobox(root, values=crypto_options, textvariable=selected_crypto, font=("Time Of Roman", 19))
+crypto_combobox.set("Select Cryptocurrency")  # Set default text
+crypto_combobox.pack(pady=20, padx=20, side=tkinter.TOP)
+crypto_combobox.bind("<<ComboboxSelected>>", on_crypto_select)
+
+def button1_click():
+    crypto_to_track = selected_crypto.get().lower()  # Use the sele
 
 text_label = tkinter.Label(root, text="Cryptocurrency Flow Investigation", font=("Time Of Roman", 18))
 text_label.pack()
@@ -224,17 +249,13 @@ def get_crypto_data(crypto):
     return data
 
 def get_crypto_price(crypto_data):
-        price = crypto_data['market_data']['current_price']['usd']
-        return price
-    
-def display_price_history(crypto, days=30, interval="daily"):
-    url = f"https://api.coingecko.com/api/v3/coins/{crypto}/market_chart?vs_currency=usd&days={days}&interval={interval}"
-    response = requests.get(url)
-    data = response.json()
-    prices = data['prices']
+crypto_combobox.pack(pady=20, padx=20, side=tkinter.TOP)
+cry
+# Variable to store selected cryptocurrency
+selected_crypto = tkinter.StringVar()
 
-    dates = [item[0] for item in prices]
-    dates = [datetime.fromtimestamp(date / 1000.0).strftime('%Y-%m-%d') for date in dates]
+# Function to handle Combobox selection
+def on_crypto_select(event):Y-%m-%d') for date in dates]
 
     prices = [item[1] for item in prices]
 
@@ -320,6 +341,19 @@ def watch_trading_window(crypto):
     df['Avg_val_sent'] = df['avg val sent']
     df['Min_val_sent_to_contract'] = df['min value sent to contract']
     df['Max_val_sent_to_contract'] = df['max val sent to contract']
+print(f'BEFORE OVERSAMPLING \n \tNon-frauds: {non_fraud} \n \tFauds: {fraud}')
+print(f'AFTER OVERSAMPLING \n \tNon-frauds: {no} \n \tFauds: {yes}')
+
+#### Modeling
+#### Random Forest Classifier
+
+RF = RandomForestClassifier(random_state=42)
+RF.fit(x_tr_resample, y_tr_resample)
+preds_RF = RF.predict(norm_test_f)
+
+print(classification_report(y_test, preds_RF))
+print(confusion_matrix(y_test, preds_RF))
+plot_confusion_matrix(RF, norm_test_f, y_test)
     df['Avg_val_sent_to_contract'] = df['avg value sent to contract']
     df['Total_transactions'] = df['total transactions (including tnx to create contract)']
     df['Total_ether_sent'] = df['total Ether sent']
@@ -394,19 +428,29 @@ df.info()
 # Turn object variables into 'category' dtype for more computation efficiency
 categories = df.select_dtypes('O').columns.astype('category')
 df[categories]
-for i in df[categories].columns:
-  print(f'The categorical column --{i}-- has --{len(df[i].value_counts())}-- unique values')
-numericals = df.select_dtypes(include=['float','int']).columns
-df[numericals].describe()
-df[numericals].var()
-print(df['FLAG'].value_counts())
+fdef detect_and_report_fraud(api_key, transaction_id):
+    transaction_details = get_transaction_details(api_key, transaction_id)
 
-pie, ax = plt.subplots(figsize=[15,10])
-labels = ['Non-fraud', 'Fraud']
-colors = ['#f9ae35', '#f64e38']
-plt.pie(x = df['FLAG'].value_counts(), autopct='%.2f%%', explode=[0.02]*2, labels=labels, pctdistance=0.5, textprops={'fontsize': 14}, colors = colors)
-plt.title('Target distribution')
-plt.show()
+    if transaction_details:
+        if is_fraudulent(transaction_details):
+            return f"Warning: Transaction {transaction_id} may be fraudulent."
+        else:
+            return f"Transaction {transaction_id} appears to be normal."
+    else:
+        return "Error: Unable to fetch transaction details."
+RF.fit(x_tr_resample, y_tr_resample)
+preds_RF = RF.predict(norm_test_f)
+
+print(classification_report(y_test, preds_RF))
+print(confusion_matrix(y_test, preds_RF))
+plot_confusion_matrix(RF, norm_test_f, y_test)
+    df['Avg_val_sent_to_contract'] = df['avg value sent to contract']
+    df['Total_transactions'] = df['total transactions (including tnx to create contract)']
+    df['Total_ether_sent'] = df['total Ether sent']
+    df['Total_ether_received'] = df['total ether received']
+    df['Total_ether_sent_contracts'] = df['total ether sent contracts']
+    df['Total_ether_balance'] = df['total ether balance']
+
 # Correlation matrix
 corr = df.corr()
 
@@ -657,17 +701,5 @@ print(f'AFTER OVERSAMPLING \n \tNon-frauds: {no} \n \tFauds: {yes}')
 
 #### Modeling
 #### Random Forest Classifier
-
 RF = RandomForestClassifier(random_state=42)
-RF.fit(x_tr_resample, y_tr_resample)
-preds_RF = RF.predict(norm_test_f)
-
-print(classification_report(y_test, preds_RF))
-print(confusion_matrix(y_test, preds_RF))
-plot_confusion_matrix(RF, norm_test_f, y_test)
-
-# Plot confusion matrix
-cm = confusion_matrix(y_true, y_pred)
-plt.matshow(cm, cmap='Blues')
-plt.colorbar()
 plt.show()
